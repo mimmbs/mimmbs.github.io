@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/lib/vuetify.min.css" />
+
+    <title>App</title>
+    <style>
+
+        /* latin-ext */
+        @font-face {
+          font-family: 'Roboto';
+          font-style: normal;
+          font-weight: 400;
+          font-display: swap;
+          src: url(/lib//KFOmCnqEu92Fr1Mu7GxKKTU1Kvnz.woff2) format('woff2');
+          unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+        }
+
+        @font-face {
+            font-family: 'Material Icons';
+            font-style: normal;
+            font-weight: 400;
+            src: url(/lib/mdi.woff2) format('woff2');            
+        }
+
+        .material-icons {
+            font-family: 'Material Icons';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        * {
+            font-size: 14px !important;
+        }
+    </style>
+    <style type="text/css" media="print">
+        @page {
+            size: landscape;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        body {
+            padding-top: 72px;
+            padding-bottom: 72px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div ref="load" style="height: 100vh; background-color: #eee;">
+            <v-container class="fill-height">
+                <v-row class="align-center">
+                    <v-col class="text-center">
+                        <v-progress-circular :size="64" :width="10" color="primary" indeterminate></v-progress-circular>       
+                        <br /><br />                
+                    </v-col>
+                </v-row>
+            </v-container>
+        </div>
+
+        <div ref="vapp" style="display: none">
+            
+            <v-row class="pa-1 pb-0 align-center no-print">
+                <v-col cols="12" md="3" order="4" order-md="1">
+                    <v-combobox v-model="selected" :disabled="isPending" :loading="isPending" density="compact"
+                        variant="solo-filled" :bg-color="!selected ? 'orange' : 'blue-grey'" :label="ui.txt_cmb_tit"
+                        :items="customerList" item-title="name" item-value="id" return-object hide-details></v-combobox>
+                </v-col>
+                <v-col cols="9" md="3" order="2" order-md="2">
+                    <v-btn class="mr-1" @click="toggleFullScreen">
+                        <span class="material-icons">fullscreen</span>
+                    </v-btn>
+                    <v-btn v-if="selected" :disabled="isPending" @click="btn_clc_prt"><span
+                            class="material-icons pr-1">print</span>{{ ui.btn_txt_prt }}</v-btn>                    
+                </v-col>
+                <v-col cols="3" md="3" order="3" order-md="3">
+                    <a v-if="currentView.toLowerCase() == 'hesaplar'" href="#/">&laquo; {{ ui.anc_lbl_hom }}</a>
+                    <a v-else href="#/hesaplar">{{ ui.anc_lbl_abo }} &raquo;</a>
+                </v-col>
+                <v-col cols="12" md="3" order="1" order-md="4" class="text-right">
+                    <v-tooltip :text="`${server.forecast.event}`" location="top">
+                        <template v-slot:activator="{ props }">
+                            <v-chip label color="grey-lighten-1" class="text-center mr-1" v-bind="props">
+                                <span class="chip-info">
+                                    <span class="material-icons text-orange-lighten-3 mr-1" style="font-size: 1.1em;">{{ server.forecast.icon }}</span>
+                                    <span class="text-grey">{{ server.forecast.heat }}&deg;C</span>
+                                </span>
+                            </v-chip>
+                        </template>
+                    </v-tooltip>
+                    <v-chip label color="blue" class="text-center mr-1"><span class="chip-info">€ {{ server.currency.eur }}</span></v-chip>
+                    <v-chip label color="green" class="text-center mr-1"><span class="chip-info">$
+                            {{ server.currency.usd }}</span></v-chip>
+                    <v-tooltip :text="`${server.calendar.date}`" location="top">
+                        <template v-slot:activator="{ props }">
+                            <v-chip label color="grey" class="text-center" v-bind="props">
+                                <span class="chip-info">                                            
+                                    {{ server.calendar.time }}
+                                </span>
+                            </v-chip>
+                        </template>
+                    </v-tooltip>
+
+                </v-col>
+            </v-row>
+            <div v-if="currentView.toLowerCase() != 'hesaplar'">
+            <v-row>
+                <v-divider class="mt-2"></v-divider>
+                <v-col>
+                    <div v-if="selected">
+                        <v-data-table :no-data-text="ui.txt_non_tra" :loading="isPending"
+                            :headers="headers" :items="transactions.details" :page="1" :items-per-page="-1"
+                            :sort-by="[{ key: 'calories', order: 'asc' }]" class="elevation-1" :hover="true">
+                            <template v-slot:top>
+                                <v-toolbar flat>
+                                    <v-toolbar-title>{{ selected.name }}<br /><span class="text-body-2">{{
+                                            selected.owner }} {{ selected.tax }}
+                                        </span></v-toolbar-title>                              
+                                    <v-dialog v-model="dialogDelete" max-width="600px">
+                                        <v-card>
+                                            <v-card-title class="text-h5">
+                                                {{ ui.txt_con_del }}<br /><span class="text-grey">{{ ui.txt_del_inf
+                                                    }}</span>
+                                            </v-card-title>
+                                            <v-card-actions>
+                                                <v-spacer></v-spacer>
+                                                <v-btn variant="outlined" color="blue" variant="text"
+                                                    @click="closeDelete">{{
+                                                    ui.btn_txt_cnc }}</v-btn>
+                                                <v-btn variant="outlined" color="red" variant="text"
+                                                    @click="deleteItemConfirm">{{
+                                                    ui.btn_txt_del }}</v-btn>
+                                            </v-card-actions>
+                                        </v-card>
+                                    </v-dialog>
+                                </v-toolbar>
+                            </template>
+                            <template v-slot:column.unitcost="{ column }">
+                                <div class="text-right">
+                                    {{ column.title }}
+                                </div>
+                            </template>
+                            <template v-slot:column.amount="{ column }">
+                                <div class="text-right">
+                                    {{ column.title }}
+                                </div>
+                            </template>
+                            <template v-slot:column.sell="{ column }">
+                                <div class="text-right">
+                                    {{ column.title }}
+                                </div>
+                            </template>
+                            <template v-slot:column.pay="{ column }">
+                                <div class="text-right">
+                                    {{ column.title }}
+                                </div>
+                            </template>
+                            <template v-slot:column.cumsell="{ column }">
+                                <div class="text-right">
+                                    <b>{{ column.title }}</b>
+                                </div>
+                            </template>
+                            <template v-slot:column.cumpay="{ column }">
+                                <div class="text-right">
+                                    <b>{{ column.title }}</b>
+                                </div>
+                            </template>
+                            <template v-slot:item.date="{ item }">
+                                <div v-html="item.raw.date" class="text-right">                                                                     
+                                </div>
+                            </template>
+                            <template v-slot:item.unitcost="{ item }">
+                                <div class="text-right">
+                                    {{ item.raw.unitcost }}
+                                </div>
+                            </template>
+                            <template v-slot:item.amount="{ item }">
+                                <div class="text-right">
+                                    {{ item.raw.amount }}
+                                </div>
+                            </template>
+                            <template v-slot:item.sell="{ item }">
+                                <div class="text-right">
+                                    {{ item.raw.sell }}
+                                </div>
+                            </template>
+                            <template v-slot:item.pay="{ item }">
+                                <div class="text-right">
+                                    {{ item.raw.pay }}
+                                </div>
+                            </template>
+                            <template v-slot:item.cumsell="{ item }">
+                                <div class="text-right">
+                                    {{ item.raw.cumsell }}
+                                </div>
+                            </template>
+                            <template v-slot:item.cumpay="{ item }">
+                                <div class="text-right">
+                                    {{ item.raw.cumpay }}
+                                </div>
+                            </template>
+                            <template v-slot:item.actions="{ item }">
+                                <v-tooltip :text="ui.lbl_tip_edt" location="top">
+                                    <template v-slot:activator="{ props }">
+                                        <v-chip :disabled="isPending" @click="editItem(item.raw)" v-bind="props"
+                                            class="ma-0 mr-1 pa-2">
+                                            <span class="material-icons text-blue"
+                                                style="font-size: 1.25em;">edit</span>
+                                        </v-chip>
+                                    </template>
+                                </v-tooltip>
+                                <v-tooltip :text="ui.lbl_tip_del" location="top">
+                                    <template v-slot:activator="{ props }">
+                                        <v-chip :disabled="isPending" @click="deleteItem(item.raw)" v-bind="props"
+                                            class="ma-0 pa-2">
+                                            <span class="material-icons text-red" style="font-size: 1.25em;">
+                                                delete
+                                            </span>
+                                        </v-chip>
+                                    </template>
+                                </v-tooltip>
+                            </template>
+                            <template v-slot:bottom>
+                                <v-divider class="mb-3"></v-divider>
+                                <v-row class="align-center no-print">
+                                    <v-col cols="6" md="2" order="2" order-md="1">
+                                        <v-text-field v-model="rankStart" type="number" class="mx-1" :label="ui.lbl_chk_str" min="1" :max="dbTransactions.details.length" hide-details>
+                                        </v-text-field>
+                                    </v-col>
+                                    <v-col cols="6" md="2" order="3" order-md="2">
+                                        <v-text-field v-model="rankEnd" type="number" class="mx-1" :label="ui.lbl_chk_end" min="1" :max="dbTransactions.details.length" hide-details>
+                                        </v-text-field>  
+                                    </v-col>
+                                    <v-col cols="12" md="2" order="4" order-md="3">
+                                        <table>
+                                            <tr>
+                                                <td width="50" class="text-right">{{ ui.tbl_hdr_sel }}</td>
+                                                <td width="80" class="text-right">{{ transactions.totalSell }}</td>
+                                                <td rowspan="2">
+                                                    <span class="pl-1 text-h5" :class="transactions.ld < 0 ? 'text-green' : 'text-red'">
+                                                        {{ transactions.net }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-right">{{ ui.tbl_hdr_pay }}</td>
+                                                <td class="text-right">{{ transactions.totalPay }}</td>
+                                            </tr>
+                                        </table>
+                                    </v-col>
+                                    <v-col cols="12" md="6" order="1" order-md="4" class="text-right">
+                                        <v-dialog v-model="dialog" max-width="1000px">
+                                            <template v-slot:activator="{ props }">
+                                                <v-btn :disabled="isPending" class="mx-1 no-print" color="green" bg-color="green"
+                                                    variant="outlined" elevation="2" v-bind="props" hide-details>
+                                                    <span class="material-icons">add</span>
+                                                    {{ ui.btn_txt_new }}
+                                                </v-btn>
+                                            </template>
+                                            <v-card>
+                                                <v-card-title>
+                                                    <span class="text-h5">{{ formTitle }}</span>
+                                                </v-card-title>
+    
+                                                <v-card-text>
+                                                    <v-container>
+                                                        <v-row>
+                                                            <v-col cols="12" sm="6" md="4">
+                                                                <v-text-field v-model="editedItem.name"
+                                                                    label="Dessert name"></v-text-field>
+                                                            </v-col>
+                                                            <v-col cols="12" sm="6" md="4">
+                                                                <v-text-field v-model="editedItem.calories"
+                                                                    label="Calories"></v-text-field>
+                                                            </v-col>
+                                                            <v-col cols="12" sm="6" md="4">
+                                                                <v-text-field v-model="editedItem.fat"
+                                                                    label="Fat (g)"></v-text-field>
+                                                            </v-col>
+                                                            <v-col cols="12" sm="6" md="4">
+                                                                <v-text-field v-model="editedItem.carbs"
+                                                                    label="Carbs (g)"></v-text-field>
+                                                            </v-col>
+                                                            <v-col cols="12" sm="6" md="4">
+                                                                <v-text-field v-model="editedItem.protein"
+                                                                    label="Protein (g)"></v-text-field>
+                                                            </v-col>
+                                                        </v-row>
+                                                    </v-container>
+                                                </v-card-text>
+    
+                                                <v-card-actions>
+                                                    <v-spacer></v-spacer>
+                                                    <v-btn variant="outlined" color="blue" @click="close">
+                                                        {{ ui.btn_txt_cnc }}
+                                                    </v-btn>
+                                                    <v-btn variant="outlined" color="green" variant="text" @click="save">
+                                                        {{ ui.btn_txt_sav }}
+                                                    </v-btn>
+                                                </v-card-actions>
+                                            </v-card>
+                                        </v-dialog>
+                                    </v-col>
+                                </v-row>
+                            </template>
+                        </v-data-table>
+                    </div>
+                    <v-container v-else class="fill-height">
+                        <v-row class="align-center">
+                            <v-col class="text-center text-grey"><span class="blink text-h5"><span
+                                        class="material-icons mr-2">warning</span>{{ ui.txt_req_cus }}</span></v-col>
+                        </v-row>
+                    </v-container>
+                </v-col>
+            </v-row>
+            </div>
+            <div v-else>
+                Customer Edit
+            </div>          
+        </div>
+    </div>
+    <script src="/lib/vue.global.js"></script>
+    <script src="/lib/vuetify.min.js"></script>
+    <script src="/lib/vuetify-labs.min.js"></script>
+    <script src="/lib/db.js"></script>
+    <script>
+        const { createApp } = Vue
+        const { createVuetify } = Vuetify
+
+        const vuetify = createVuetify()
+
+        const app = createApp({
+            setup() {
+                const db = new dbr("tr-TR");
+                const server = Vue.ref({ calendar: { date: "!", time: "!" }, forecast: { icon: "-", event: "-" , heat: "-"}, currency: { usd: "?", eur: "?"}});
+                const currentPath = Vue.ref(window.location.hash);
+                const isPending = Vue.ref(false);
+                const vapp = Vue.ref(null);
+                const load = Vue.ref(null);
+                const ui = Vue.ref(db.LanguagePack());
+                const customerList = Vue.ref(db.Customers());
+                const selected = Vue.ref(null);
+                const dialog = Vue.ref(false);
+                const dialogDelete = Vue.ref(false);
+                const headers = Vue.ref([
+                    { title: ui.value.tbl_hdr_dat, align: 'start', key: 'date', width: '130px' },
+                    { title: ui.value.tbl_hdr_itm, key: 'item' },
+                    { title: ui.value.tbl_hdr_ucs, key: 'unitcost', width: '80px', sortable: false },
+                    { title: ui.value.tbl_hdr_amn, key: 'amount', width: '50px', sortable: false },
+                    { title: ui.value.tbl_hdr_unt, key: 'unit', width: '50px', sortable: false },
+                    { title: ui.value.tbl_hdr_sel, key: 'sell', width: '120px', sortable: false },
+                    { title: ui.value.tbl_hdr_pay, key: 'pay', width: '120px', sortable: false },
+                    { title: ui.value.tbl_hdr_tse, key: 'cumsell', width: '140px', sortable: false },
+                    { title: ui.value.tbl_hdr_tpa, key: 'cumpay', width: '140px', sortable: false },
+                    { title: ui.value.tbl_hdr_act, key: 'actions', width: '100px', sortable: false },
+                ]);
+                const dbTransactions = Vue.ref({details: []});
+                const transactions = Vue.ref({details: []});
+                const rankStart = Vue.ref(1);
+                const rankEnd = Vue.ref(1);
+                const editedIndex = Vue.ref(-1);
+                const editedItem = Vue.ref({
+                    name: '',
+                    calories: 0,
+                    fat: 0,
+                    carbs: 0,
+                    protein: 0,
+                });
+                const defaultItem = Vue.ref({
+                    name: '',
+                    calories: 0,
+                    fat: 0,
+                    carbs: 0,
+                    protein: 0,
+                });
+
+                const btn_clc_prt = () => {
+                    window.print();
+                }
+
+                const toggleFullScreen = () => {
+                    if (!document.fullscreenElement &&    // alternative standard method
+                        !document.mozFullScreenElement && !document.webkitFullscreenElement) {  // current working methods
+                        if (document.documentElement.requestFullscreen) {
+                            document.documentElement.requestFullscreen();
+                        } else if (document.documentElement.mozRequestFullScreen) {
+                            document.documentElement.mozRequestFullScreen();
+                        } else if (document.documentElement.webkitRequestFullscreen) {
+                            document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                        }
+                    } else {
+                        if (document.cancelFullScreen) {
+                            document.cancelFullScreen();
+                        } else if (document.mozCancelFullScreen) {
+                            document.mozCancelFullScreen();
+                        } else if (document.webkitCancelFullScreen) {
+                            document.webkitCancelFullScreen();
+                        }
+                    }
+                }
+
+                const currentView = Vue.computed(() => {
+                    return currentPath.value.split('/')[1] ?? 'home';
+                });
+
+                const formTitle = Vue.computed(() => {
+                    return editedIndex.value === -1 ? ui.value.txt_new_itm : ui.value.txt_edt_itm
+                })
+
+                timer_sd = null;
+                Vue.onMounted(async () => {
+                    await getServerData();
+                    vapp.value.style.display = 'block';
+                    load.value.style.display = 'none';
+                    timer_sd = setInterval(getServerData, 1 * 1000);
+                });
+
+                Vue.onUnmounted(() => {
+                    clearInterval(timer_sd);
+                    timer_sd = null;
+                });
+
+                window.addEventListener('hashchange', () => {
+                    currentPath.value = window.location.hash
+                });
+
+                Vue.watch(dialog, (val) => {
+                    val || close();
+                });
+
+                Vue.watch(dialogDelete, (val) => {
+                    val || closeDelete();
+                });
+
+                Vue.watch(selected, (val) => {
+                    if (customerList.value.includes(val)) {
+                        getTransactions();
+                    }
+                })
+
+                Vue.watch(rankStart, () => {
+                    filterTransactions();
+                });
+
+                Vue.watch(rankEnd, () => {
+                    filterTransactions();
+                });
+
+                Vue.watch(currentView, (val) => {
+                    selected.value = null;
+                });
+
+                const getServerData = async () => {
+                    server.value = await dbr.Server();
+                }
+
+                const getTransactions = async () => {
+                    isPending.value = true;
+                    dbTransactions.value = await db.Transactions(selected.value.id);
+                    rankEnd.value = dbTransactions.value.details.length;
+                    Object.assign(transactions.value, dbTransactions.value);
+                    isPending.value = false;
+                }
+
+                const filterTransactions = () => {
+                    transactions.value.details = dbTransactions.value.details.slice(parseInt(rankStart.value) - 1, parseInt(rankEnd.value));
+                }
+
+                const editItem = (item) => {
+                    editedIndex.value = transactions.value.details.indexOf(item);
+                    editedItem.value = Object.assign({}, item);
+                    dialog.value = true;
+                }
+
+                const deleteItem = (item) => {
+                    ui.value.txt_del_inf = item.item;
+                    editedIndex.value = transactions.value.details.indexOf(item);
+                    editedItem.value = Object.assign({}, item);
+                    dialogDelete.value = true;
+                }
+
+                const deleteItemConfirm = () => {
+                    closeDelete();
+                    transactions.value.details.splice(editedIndex.value, 1);
+                }
+
+                const close = () => {
+                    dialog.value = false;
+                    Vue.nextTick(() => {
+                        editedItem.value = Object.assign({}, defaultItem.value);
+                        editedIndex.value = -1;
+                    });
+                }
+
+                const closeDelete = () => {
+                    dialogDelete.value = false;
+                    Vue.nextTick(() => {
+                        editedItem.value = Object.assign({}, defaultItem);
+                        editedIndex.value = -1;
+                    });
+                }
+
+                const save = () => {
+                    if (editedIndex.value > -1) {
+                        Object.assign(transactions.value.details[editedIndex.value], editedItem.value.details);
+                    } else {
+                        transactions.value.details.push(editedItem.value);
+                    }
+                    close();
+                }
+
+                return {
+                    isPending,
+                    vapp,
+                    load,
+                    currentPath,
+                    currentView,
+                    ui,
+                    btn_clc_prt,
+                    toggleFullScreen,                    
+                    getTransactions,
+                    filterTransactions,
+                    editItem,
+                    deleteItem,
+                    deleteItemConfirm,
+                    close,
+                    closeDelete,
+                    save,
+                    dialog,
+                    dialogDelete,
+                    headers,
+                    dbTransactions,
+                    transactions,
+                    editedIndex,
+                    editedItem,
+                    defaultItem,
+                    formTitle,
+                    selected,
+                    customerList,
+                    server,
+                    rankStart,
+                    rankEnd
+                }
+            }
+        })
+        app.use(vuetify).mount('#app')
+
+    </script>
+    <style>
+        a {
+            text-decoration: none;
+            color: blue;
+        }
+
+        a:hover {
+            color: orange;
+        }
+
+        .chip-info {
+            width: 60px;
+        }
+
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+
+        @keyframes blinker {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        @media print {
+
+            .no-print,
+            .v-data-table__td:last-child {
+                display: none;
+            }
+        }
+    </style>
+
+</body>
+
+</html>
