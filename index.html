@@ -129,7 +129,8 @@
                             <template v-slot:top>
                                 <v-toolbar flat>
                                     <v-toolbar-title>{{ selected.name }}<br /><span class="text-body-2">{{
-                                            selected.owner }} {{ selected.tax }}
+                                            selected.phone }} {{ selected.address }} <br />
+                                            {{ ui.txt_rep_tit }}
                                         </span></v-toolbar-title>                              
                                     <v-dialog v-model="dialogDelete" max-width="600px">
                                         <v-card>
@@ -239,11 +240,11 @@
                                 <v-divider class="mb-3"></v-divider>
                                 <v-row class="align-center no-print">
                                     <v-col cols="6" md="2" order="2" order-md="1">
-                                        <v-text-field v-model="rankStart" type="number" class="mx-1" :label="ui.lbl_chk_str" min="1" :max="dbTransactions.details.length" hide-details>
+                                        <v-text-field v-model="rankStart" type="number" class="ml-1" :label="ui.lbl_chk_str" min="1" :max="dbTransactions.details.length" hide-details>
                                         </v-text-field>
                                     </v-col>
                                     <v-col cols="6" md="2" order="3" order-md="2">
-                                        <v-text-field v-model="rankEnd" type="number" class="mx-1" :label="ui.lbl_chk_end" min="1" :max="dbTransactions.details.length" hide-details>
+                                        <v-text-field v-model="rankEnd" type="number" class="mr-1" :label="ui.lbl_chk_end" min="1" :max="dbTransactions.details.length" hide-details>
                                         </v-text-field>  
                                     </v-col>
                                     <v-col cols="12" md="2" order="4" order-md="3">
