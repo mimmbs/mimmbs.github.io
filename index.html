@@ -73,8 +73,7 @@
             </v-container>
         </div>
 
-        <div ref="vapp" style="display: none">
-            
+        <div ref="vapp" style="display: none">       
             <v-row class="pa-1 pb-0 align-center no-print">
                 <v-col cols="12" md="3" order="4" order-md="1">
                     <v-combobox v-model="selected" :disabled="isPending" :loading="isPending" density="compact"
@@ -115,12 +114,11 @@
                             </v-chip>
                         </template>
                     </v-tooltip>
-
-                </v-col>
-            </v-row>
+                </v-col>                
+            </v-row>      
+            <v-divider class="my-1"></v-divider>      
             <div v-if="currentView.toLowerCase() != 'hesaplar'">
-            <v-row>
-                <v-divider class="mt-2"></v-divider>
+            <v-row>                
                 <v-col>
                     <div v-if="selected">
                         <v-data-table :no-data-text="ui.txt_non_tra" :loading="isPending"
@@ -129,9 +127,8 @@
                             <template v-slot:top>
                                 <v-toolbar flat>
                                     <v-toolbar-title>{{ selected.name }}<br /><span class="text-body-2">{{
-                                            selected.phone }} {{ selected.address }} <br />
-                                            {{ ui.txt_rep_tit }}
-                                        </span></v-toolbar-title>                              
+                                            selected.phone }} {{ selected.address }}<br />
+                                        {{ ui.txt_rep_tit }}</v-toolbar-title>                              
                                     <v-dialog v-model="dialogDelete" max-width="600px">
                                         <v-card>
                                             <v-card-title class="text-h5">
@@ -140,10 +137,10 @@
                                             </v-card-title>
                                             <v-card-actions>
                                                 <v-spacer></v-spacer>
-                                                <v-btn variant="outlined" color="blue" variant="text"
+                                                <v-btn :disabled="isPending" variant="outlined" color="blue" variant="text"
                                                     @click="closeDelete">{{
                                                     ui.btn_txt_cnc }}</v-btn>
-                                                <v-btn variant="outlined" color="red" variant="text"
+                                                <v-btn :loading="isPending" :disabled="isPending" variant="outlined" color="red" variant="text"
                                                     @click="deleteItemConfirm">{{
                                                     ui.btn_txt_del }}</v-btn>
                                             </v-card-actions>
@@ -181,38 +178,44 @@
                                     <b>{{ column.title }}</b>
                                 </div>
                             </template>
+                            <template v-slot:item.rank="{ item }">
+                                <div class="text-right">   
+                                    <b>{{ item.raw.rank }}</b>                                                                  
+                                </div>
+                            </template>
                             <template v-slot:item.date="{ item }">
-                                <div v-html="item.raw.date" class="text-right">                                                                     
+                                <div>   
+                                    {{ new Date(item.raw.date).toLocaleDateString() }}                                                                
                                 </div>
                             </template>
                             <template v-slot:item.unitcost="{ item }">
                                 <div class="text-right">
-                                    {{ item.raw.unitcost }}
+                                    {{ item.raw.amount > 0 ? formatCurr(item.raw.unitcost) : "" }}                                    
                                 </div>
                             </template>
                             <template v-slot:item.amount="{ item }">
                                 <div class="text-right">
-                                    {{ item.raw.amount }}
+                                    {{ item.raw.amount > 0 ? formatCurr(item.raw.amount).slice(0, -3) : "" }}
                                 </div>
                             </template>
                             <template v-slot:item.sell="{ item }">
                                 <div class="text-right">
-                                    {{ item.raw.sell }}
+                                    {{ item.raw.amount > 0 ? formatCurr(item.raw.unitcost * item.raw.amount) : "" }}
                                 </div>
                             </template>
                             <template v-slot:item.pay="{ item }">
                                 <div class="text-right">
-                                    {{ item.raw.pay }}
+                                    {{ item.raw.amount > 0 ? "" : formatCurr(item.raw.unitcost) }}
                                 </div>
                             </template>
                             <template v-slot:item.cumsell="{ item }">
                                 <div class="text-right">
-                                    {{ item.raw.cumsell }}
+                                    {{ item.raw.cumsell == "" ? "" : formatCurr(item.raw.cumsell) }}
                                 </div>
                             </template>
                             <template v-slot:item.cumpay="{ item }">
                                 <div class="text-right">
-                                    {{ item.raw.cumpay }}
+                                    {{ item.raw.cumpay == "" ? "" : formatCurr(item.raw.cumpay) }}
                                 </div>
                             </template>
                             <template v-slot:item.actions="{ item }">
@@ -248,58 +251,63 @@
                                         </v-text-field>  
                                     </v-col>
                                     <v-col cols="12" md="2" order="4" order-md="3">
-                                        <table>
+                                        <table ref="sums">
                                             <tr>
                                                 <td width="50" class="text-right">{{ ui.tbl_hdr_sel }}</td>
-                                                <td width="80" class="text-right">{{ transactions.totalSell }}</td>
+                                                <td width="80" class="text-right">{{ formatCurr(transactions.totalSell) }}</td>
                                                 <td rowspan="2">
-                                                    <span class="pl-1 text-h5" :class="transactions.ld < 0 ? 'text-green' : 'text-red'">
-                                                        {{ transactions.net }}
+                                                    <span class="pl-3 text-h5" :class="transactions.ld < 0 ? 'text-green' : 'text-red'">
+                                                        {{ formatCurr(transactions.net) }}
                                                     </span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td class="text-right">{{ ui.tbl_hdr_pay }}</td>
-                                                <td class="text-right">{{ transactions.totalPay }}</td>
+                                                <td class="text-right">{{ formatCurr(transactions.totalPay) }}</td>
                                             </tr>
                                         </table>
                                     </v-col>
                                     <v-col cols="12" md="6" order="1" order-md="4" class="text-right">
                                         <v-dialog v-model="dialog" max-width="1000px">
                                             <template v-slot:activator="{ props }">
-                                                <v-btn :disabled="isPending" class="mx-1 no-print" color="green" bg-color="green"
-                                                    variant="outlined" elevation="2" v-bind="props" hide-details>
+                                                <v-btn v-show="isScrolled" class="mx-1 no-print" style="position: fixed; bottom: 21px; right: 94px;" variant="outlined" elevation="4" @click="backToTop" hide-details transition="fade-transition">
+                                                    <span class="material-icons">arrow_upward</span>
+                                                </v-btn>
+                                                <v-btn :disabled="isPending" class="mx-1 no-print" color="green" v-bind="props" hide-details>
                                                     <span class="material-icons">add</span>
                                                     {{ ui.btn_txt_new }}
                                                 </v-btn>
                                             </template>
                                             <v-card>
                                                 <v-card-title>
-                                                    <span class="text-h5">{{ formTitle }}</span>
+                                                    <span class="text-h5">{{ formTitle }}</span> 
                                                 </v-card-title>
     
                                                 <v-card-text>
                                                     <v-container>
-                                                        <v-row>
+                                                        <v-row class="align-center">
                                                             <v-col cols="12" sm="6" md="4">
-                                                                <v-text-field v-model="editedItem.name"
-                                                                    label="Dessert name"></v-text-field>
+                                                                <v-text-field :disabled="isPending" v-model="editedItem.date" type="date" :label="ui.tbl_hdr_dat"></v-text-field>
                                                             </v-col>
                                                             <v-col cols="12" sm="6" md="4">
-                                                                <v-text-field v-model="editedItem.calories"
-                                                                    label="Calories"></v-text-field>
+                                                                <v-text-field :disabled="isPending" v-model="editedItem.item"
+                                                                    :label="ui.tbl_hdr_itm" :hint="ui.txt_tip_req"></v-text-field>
                                                             </v-col>
                                                             <v-col cols="12" sm="6" md="4">
-                                                                <v-text-field v-model="editedItem.fat"
-                                                                    label="Fat (g)"></v-text-field>
+                                                                <v-text-field :disabled="isPending" v-model="editedItem.amount" 
+                                                                    :label="ui.tbl_hdr_amn" :hint="ui.txt_tip_amn"></v-text-field>
                                                             </v-col>
                                                             <v-col cols="12" sm="6" md="4">
-                                                                <v-text-field v-model="editedItem.carbs"
-                                                                    label="Carbs (g)"></v-text-field>
+                                                                <v-text-field :disabled="isPending || editedItem.amount <= 0" v-model="editedItem.unit"
+                                                                    :label="ui.tbl_hdr_unt"></v-text-field>
                                                             </v-col>
                                                             <v-col cols="12" sm="6" md="4">
-                                                                <v-text-field v-model="editedItem.protein"
-                                                                    label="Protein (g)"></v-text-field>
+                                                                <v-text-field :disabled="isPending" v-model="editedItem.unitcost"
+                                                                    :label="ui.tbl_hdr_ucs" :hint="ui.txt_tip_sep"></v-text-field>
+                                                            </v-col>
+                                                            <v-col cols="12" sm="6" md="4">
+                                                                <div v-html="ui.txt_amn_tpi">                                                                    
+                                                                </div>
                                                             </v-col>
                                                         </v-row>
                                                     </v-container>
@@ -307,10 +315,10 @@
     
                                                 <v-card-actions>
                                                     <v-spacer></v-spacer>
-                                                    <v-btn variant="outlined" color="blue" @click="close">
+                                                    <v-btn :disabled="isPending" variant="outlined" color="blue" @click="close">
                                                         {{ ui.btn_txt_cnc }}
                                                     </v-btn>
-                                                    <v-btn variant="outlined" color="green" variant="text" @click="save">
+                                                    <v-btn :loading="isPending" :disabled="isPending" variant="outlined" color="green" variant="text" @click="save">
                                                         {{ ui.btn_txt_sav }}
                                                     </v-btn>
                                                 </v-card-actions>
@@ -331,7 +339,10 @@
             </v-row>
             </div>
             <div v-else>
-                Customer Edit
+                <v-row class="align-center">
+                    <v-col class="text-center text-grey"><span class="blink text-h5"><span
+                                class="material-icons mr-2">warning</span>{{ ui.txt_req_cus }}</span></v-col>
+                </v-row>
             </div>          
         </div>
     </div>
@@ -351,16 +362,19 @@
                 const server = Vue.ref({ calendar: { date: "!", time: "!" }, forecast: { icon: "-", event: "-" , heat: "-"}, currency: { usd: "?", eur: "?"}});
                 const currentPath = Vue.ref(window.location.hash);
                 const isPending = Vue.ref(false);
+                const isScrolled = Vue.ref(false);
                 const vapp = Vue.ref(null);
                 const load = Vue.ref(null);
+                const sums = Vue.ref(null);
                 const ui = Vue.ref(db.LanguagePack());
                 const customerList = Vue.ref(db.Customers());
                 const selected = Vue.ref(null);
                 const dialog = Vue.ref(false);
                 const dialogDelete = Vue.ref(false);
                 const headers = Vue.ref([
-                    { title: ui.value.tbl_hdr_dat, align: 'start', key: 'date', width: '130px' },
-                    { title: ui.value.tbl_hdr_itm, key: 'item' },
+                    { title: '#', align: 'center', key: 'rank', width: '30px' },
+                    { title: ui.value.tbl_hdr_dat, key: 'date', width: '90px', sortable: false },
+                    { title: ui.value.tbl_hdr_itm, key: 'item', sortable: false },
                     { title: ui.value.tbl_hdr_ucs, key: 'unitcost', width: '80px', sortable: false },
                     { title: ui.value.tbl_hdr_amn, key: 'amount', width: '50px', sortable: false },
                     { title: ui.value.tbl_hdr_unt, key: 'unit', width: '50px', sortable: false },
@@ -371,23 +385,23 @@
                     { title: ui.value.tbl_hdr_act, key: 'actions', width: '100px', sortable: false },
                 ]);
                 const dbTransactions = Vue.ref({details: []});
-                const transactions = Vue.ref({details: []});
+                const transactions = Vue.ref({details: [], totalSell: 0, totalPay: 0, net: 0, ld: null });
                 const rankStart = Vue.ref(1);
                 const rankEnd = Vue.ref(1);
                 const editedIndex = Vue.ref(-1);
                 const editedItem = Vue.ref({
-                    name: '',
-                    calories: 0,
-                    fat: 0,
-                    carbs: 0,
-                    protein: 0,
+                    date: null,
+                    item: '',
+                    amount: 0,
+                    unit: '',
+                    unitcost: 0,
                 });
-                const defaultItem = Vue.ref({
-                    name: '',
-                    calories: 0,
-                    fat: 0,
-                    carbs: 0,
-                    protein: 0,
+                const defaultItem = Vue.ref({       
+                    date: null,
+                    item: '',
+                    amount: 0,
+                    unit: '',
+                    unitcost: 0,
                 });
 
                 const btn_clc_prt = () => {
@@ -414,6 +428,10 @@
                         }
                     }
                 }
+                
+                const backToTop = () => {
+                    vapp.value.scrollIntoView({behavior: 'smooth'});
+                }
 
                 const currentView = Vue.computed(() => {
                     return currentPath.value.split('/')[1] ?? 'home';
@@ -421,10 +439,11 @@
 
                 const formTitle = Vue.computed(() => {
                     return editedIndex.value === -1 ? ui.value.txt_new_itm : ui.value.txt_edt_itm
-                })
+                });
 
                 timer_sd = null;
                 Vue.onMounted(async () => {
+                    window.addEventListener('scroll', onScroll);
                     await getServerData();
                     vapp.value.style.display = 'block';
                     load.value.style.display = 'none';
@@ -473,16 +492,30 @@
                 const getTransactions = async () => {
                     isPending.value = true;
                     dbTransactions.value = await db.Transactions(selected.value.id);
+                    rankStart.value = 1;
                     rankEnd.value = dbTransactions.value.details.length;
                     Object.assign(transactions.value, dbTransactions.value);
                     isPending.value = false;
+                    Vue.nextTick(() =>
+                        sums.value.scrollIntoView({behavior: 'smooth'})
+                    );
                 }
+
+                const formatCurr = (cost) => {
+                    if (cost == null || cost == "") {
+                        return "";
+                    }
+                    return `${cost.toLocaleString(this.lang, {
+                        style: 'currency',
+                        currency: 'USD',
+                    }).replace('$', '')}`;
+                }   
 
                 const filterTransactions = () => {
                     transactions.value.details = dbTransactions.value.details.slice(parseInt(rankStart.value) - 1, parseInt(rankEnd.value));
                 }
 
-                const editItem = (item) => {
+                const editItem = (item) => {                    
                     editedIndex.value = transactions.value.details.indexOf(item);
                     editedItem.value = Object.assign({}, item);
                     dialog.value = true;
@@ -516,32 +549,32 @@
                     });
                 }
 
-                const save = () => {
+                const save = async () => {
                     if (editedIndex.value > -1) {
-                        Object.assign(transactions.value.details[editedIndex.value], editedItem.value.details);
+                        Object.assign(transactions.value.details[editedIndex.value], editedItem.value);
                     } else {
                         transactions.value.details.push(editedItem.value);
                     }
+                    await db.Save(selected.value.id, transactions.value.details);
+                    await getTransactions();
                     close();
+                }
+
+                const onScroll = () => {
+                    isScrolled.value = false;
+                    if (window.scrollY > 20) {
+                        isScrolled.value = true;
+                    }
                 }
 
                 return {
                     isPending,
                     vapp,
                     load,
+                    sums,
                     currentPath,
                     currentView,
                     ui,
-                    btn_clc_prt,
-                    toggleFullScreen,                    
-                    getTransactions,
-                    filterTransactions,
-                    editItem,
-                    deleteItem,
-                    deleteItemConfirm,
-                    close,
-                    closeDelete,
-                    save,
                     dialog,
                     dialogDelete,
                     headers,
@@ -555,7 +588,21 @@
                     customerList,
                     server,
                     rankStart,
-                    rankEnd
+                    rankEnd,
+                    isScrolled,
+                    btn_clc_prt,
+                    toggleFullScreen,                    
+                    getTransactions,
+                    filterTransactions,
+                    editItem,
+                    deleteItem,
+                    deleteItemConfirm,
+                    close,
+                    closeDelete,
+                    save,
+                    backToTop,
+                    onScroll,
+                    formatCurr
                 }
             }
         })
