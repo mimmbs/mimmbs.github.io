@@ -77,8 +77,8 @@
         <div ref="vapp" style="display: none">       
             <v-row class="pa-1 pb-0 align-center no-print">
                 <v-col cols="12" md="3" order="4" order-md="1">
-                    <v-combobox v-model="selected" :disabled="isPending" :loading="isPending" density="compact"
-                        variant="solo-filled" :bg-color="!selected ? 'orange' : 'blue-grey'" :label="ui.txt_cmb_tit"
+                    <v-combobox v-if="currentView.toLowerCase() != 'hesaplar'" v-model="selected" :disabled="isPending" :loading="isPending" density="compact"
+                        variant="solo-filled" :bg-color="!selected ? 'orange' : 'blue-grey'" :label="i18n.txt_cmb_tit"
                         :items="customerList" item-title="name" item-value="id" return-object hide-details></v-combobox>
                 </v-col>
                 <v-col cols="9" md="3" order="2" order-md="2">
@@ -86,23 +86,13 @@
                         <span class="material-icons">fullscreen</span>
                     </v-btn>
                     <v-btn v-if="selected" :disabled="isPending" @click="btn_clc_prt"><span
-                            class="material-icons pr-1">print</span>{{ ui.btn_txt_prt }}</v-btn>                    
+                            class="material-icons pr-1">print</span>{{ i18n.btn_txt_prt }}</v-btn>                    
                 </v-col>
                 <v-col cols="3" md="3" order="3" order-md="3">
-                    <a v-if="currentView.toLowerCase() == 'hesaplar'" href="#/">&laquo; {{ ui.anc_lbl_hom }}</a>
-                    <a v-else href="#/hesaplar">{{ ui.anc_lbl_abo }} &raquo;</a>
+                    <a v-if="currentView.toLowerCase() == 'hesaplar'" href="#/">&laquo; {{ i18n.anc_lbl_hom }}</a>
+                    <a v-else href="#/hesaplar">{{ i18n.anc_lbl_abo }} &raquo;</a>
                 </v-col>
                 <v-col cols="12" md="3" order="1" order-md="4" class="text-right">
-                    <v-tooltip :text="`${server.forecast.event}`" location="top">
-                        <template v-slot:activator="{ props }">
-                            <v-chip label color="grey-lighten-1" class="text-center mr-1" v-bind="props">
-                                <span class="chip-info">
-                                    <span class="material-icons text-orange-lighten-3 mr-1" style="font-size: 1.1em;">{{ server.forecast.icon }}</span>
-                                    <span class="text-grey">{{ server.forecast.heat }}&deg;C</span>
-                                </span>
-                            </v-chip>
-                        </template>
-                    </v-tooltip>
                     <v-chip label color="blue" class="text-center mr-1"><span class="chip-info">€ {{ server.currency.eur }}</span></v-chip>
                     <v-chip label color="green" class="text-center mr-1"><span class="chip-info">$
                             {{ server.currency.usd }}</span></v-chip>
@@ -122,28 +112,28 @@
             <v-row>                
                 <v-col>
                     <div v-if="selected">
-                        <v-data-table :no-data-text="ui.txt_non_tra" :loading="isPending"
+                        <v-data-table :no-data-text="i18n.txt_non_tra" :loading="isPending"
                             :headers="headers" :items="transactions.details" :page="1" :items-per-page="-1"
                             :sort-by="[{ key: 'calories', order: 'asc' }]" class="elevation-1" :hover="true">
                             <template v-slot:top>
                                 <v-toolbar flat>
                                     <v-toolbar-title>{{ selected.name }}<br /><span class="text-body-2">{{
                                             selected.phone }} {{ selected.address }}<br />
-                                        {{ ui.txt_rep_tit }}</v-toolbar-title>                              
+                                        {{ i18n.txt_rep_tit }}</v-toolbar-title>                              
                                     <v-dialog v-model="dialogDelete" max-width="600px">
                                         <v-card>
                                             <v-card-title class="text-h5">
-                                                {{ ui.txt_con_del }}<br /><span class="text-grey">{{ ui.txt_del_inf
+                                                {{ i18n.txt_con_del }}<br /><span class="text-grey">{{ i18n.txt_del_inf
                                                     }}</span>
                                             </v-card-title>
                                             <v-card-actions>
                                                 <v-spacer></v-spacer>
                                                 <v-btn :disabled="isPending" variant="outlined" color="blue" variant="text"
                                                     @click="closeDelete">{{
-                                                    ui.btn_txt_cnc }}</v-btn>
+                                                    i18n.btn_txt_cnc }}</v-btn>
                                                 <v-btn :loading="isPending" :disabled="isPending" variant="outlined" color="red" variant="text"
                                                     @click="deleteItemConfirm">{{
-                                                    ui.btn_txt_del }}</v-btn>
+                                                    i18n.btn_txt_del }}</v-btn>
                                             </v-card-actions>
                                         </v-card>
                                     </v-dialog>
@@ -220,7 +210,7 @@
                                 </div>
                             </template>
                             <template v-slot:item.actions="{ item }">
-                                <v-tooltip :text="ui.lbl_tip_edt" location="top">
+                                <v-tooltip :text="i18n.lbl_tip_edt" location="top">
                                     <template v-slot:activator="{ props }">
                                         <v-chip :disabled="isPending || rankStart != 1 || rankEnd != dbTransactions.details.length" @click="editItem(item.raw)" v-bind="props"
                                             class="ma-0 mr-1 pa-2">
@@ -228,7 +218,7 @@
                                         </v-chip>
                                     </template>
                                 </v-tooltip>
-                                <v-tooltip :text="ui.lbl_tip_del" location="top">
+                                <v-tooltip :text="i18n.lbl_tip_del" location="top">
                                     <template v-slot:activator="{ props }">
                                         <v-chip :disabled="isPending || rankStart != 1 || rankEnd != dbTransactions.details.length" @click="deleteItem(item.raw)" v-bind="props"
                                             class="ma-0 pa-2">
@@ -241,17 +231,17 @@
                                 <v-divider class="mb-3"></v-divider>
                                 <v-row class="align-center no-print">
                                     <v-col cols="6" md="2" order="2" order-md="1">
-                                        <v-text-field v-model="rankStart" type="number" density="compact" class="ml-1" :label="`${ui.lbl_chk_str} (1)`" variant="solo-filled" :bg-color="rankStart != 1 ? 'blue-lighten-1' : 'white'" min="1" :max="dbTransactions.details.length" hide-details>
+                                        <v-text-field v-model="rankStart" type="number" density="compact" class="ml-1" :label="`${i18n.lbl_chk_str} (1)`" variant="solo-filled" :bg-color="rankStart != 1 ? 'blue-lighten-1' : 'white'" min="1" :max="dbTransactions.details.length" hide-details>
                                         </v-text-field>
                                     </v-col>
                                     <v-col cols="6" md="2" order="3" order-md="2">
-                                        <v-text-field v-model="rankEnd" type="number" density="compact" class="mr-1" :label="`${ui.lbl_chk_end} (${dbTransactions.details.length})`" variant="solo-filled" :bg-color="rankEnd != dbTransactions.details.length ? 'blue-lighten-1' : 'white'" min="1" :max="dbTransactions.details.length" hide-details>
+                                        <v-text-field v-model="rankEnd" type="number" density="compact" class="mr-1" :label="`${i18n.lbl_chk_end} (${dbTransactions.details.length})`" variant="solo-filled" :bg-color="rankEnd != dbTransactions.details.length ? 'blue-lighten-1' : 'white'" min="1" :max="dbTransactions.details.length" hide-details>
                                         </v-text-field>  
                                     </v-col>
                                     <v-col cols="12" md="2" order="4" order-md="3">
                                         <table ref="sums">
                                             <tr>
-                                                <td width="50" class="text-right">{{ ui.tbl_hdr_sel }}</td>
+                                                <td width="50" class="text-right">{{ i18n.tbl_hdr_sel }}</td>
                                                 <td width="80" class="text-right">{{ formatCurr(transactions.totalSell) }}</td>
                                                 <td rowspan="2">
                                                     <span class="pl-3 text-h5" :class="transactions.ld < 0 ? 'text-green' : 'text-red'">
@@ -260,7 +250,7 @@
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td class="text-right">{{ ui.tbl_hdr_pay }}</td>
+                                                <td class="text-right">{{ i18n.tbl_hdr_pay }}</td>
                                                 <td class="text-right">{{ formatCurr(transactions.totalPay) }}</td>
                                             </tr>
                                         </table>
@@ -273,7 +263,7 @@
                                                 </v-btn>
                                                 <v-btn :disabled="isPending || rankStart != 1 || rankEnd != dbTransactions.details.length" class="mx-1 no-print" color="green" v-bind="props" hide-details>
                                                     <span class="material-icons">add</span>
-                                                    {{ ui.btn_txt_new }}
+                                                    {{ i18n.btn_txt_new }}
                                                 </v-btn>
                                             </template>
                                             <v-card>
@@ -285,23 +275,23 @@
                                                     <v-container>
                                                         <v-row class="align-center">
                                                             <v-col cols="12" sm="6" md="4">
-                                                                <v-text-field :disabled="isPending" v-model="editedItem.date" type="date" :label="ui.tbl_hdr_dat"></v-text-field>
+                                                                <v-text-field :disabled="isPending" v-model="editedItem.date" type="date" :label="i18n.tbl_hdr_dat"></v-text-field>
                                                             </v-col>
                                                             <v-col cols="12" sm="6" md="4">
                                                                 <v-text-field :disabled="isPending" v-model="editedItem.item"
-                                                                    :label="ui.tbl_hdr_itm" :rules="[ v => !!v || ui.txt_tip_req ]"></v-text-field>
+                                                                    :label="i18n.tbl_hdr_itm" :rules="[ v => !!v || i18n.txt_tip_req ]"></v-text-field>
                                                             </v-col>
                                                             <v-col cols="12" sm="6" md="4">
                                                                 <v-text-field :disabled="isPending" v-model="editedItem.amount" 
-                                                                    :label="ui.tbl_hdr_amn" :hint="ui.txt_tip_amn"></v-text-field>
+                                                                    :label="i18n.tbl_hdr_amn" :hint="i18n.txt_tip_amn"></v-text-field>
                                                             </v-col>
                                                             <v-col cols="12" sm="6" md="4">
                                                                 <v-text-field :disabled="isPending || editedItem.amount <= 0" v-model="editedItem.unit"
-                                                                    :label="ui.tbl_hdr_unt"></v-text-field>
+                                                                    :label="i18n.tbl_hdr_unt"></v-text-field>
                                                             </v-col>
                                                             <v-col cols="12" sm="6" md="4">
                                                                 <v-text-field :disabled="isPending" v-model="editedItem.unitcost"
-                                                                    :label="ui.tbl_hdr_ucs" :hint="ui.txt_tip_sep"></v-text-field>
+                                                                    :label="i18n.tbl_hdr_ucs" :hint="i18n.txt_tip_sep"></v-text-field>
                                                             </v-col>
                                                             <v-col cols="12" sm="6" md="4">
                                                                 {{ getInfo }}
@@ -313,10 +303,10 @@
                                                 <v-card-actions>
                                                     <v-spacer></v-spacer>
                                                     <v-btn :disabled="isPending" variant="outlined" color="blue" @click="close">
-                                                        {{ ui.btn_txt_cnc }}
+                                                        {{ i18n.btn_txt_cnc }}
                                                     </v-btn>
                                                     <v-btn :loading="isPending" :disabled="isPending || editedItem.item == null || editedItem.item == ''" variant="outlined" color="green" variant="text" @click="save">
-                                                        {{ ui.btn_txt_sav }}
+                                                        {{ i18n.btn_txt_sav }}
                                                     </v-btn>
                                                 </v-card-actions>
                                             </v-card>
@@ -329,7 +319,7 @@
                     <v-container v-else class="fill-height">
                         <v-row class="align-center">
                             <v-col class="text-center text-grey"><span class="blink text-h5"><span
-                                        class="material-icons mr-2">warning</span>{{ ui.txt_req_cus }}</span></v-col>
+                                        class="material-icons mr-2">warning</span>{{ i18n.txt_req_cus }}</span></v-col>
                         </v-row>
                     </v-container>
                 </v-col>
@@ -337,8 +327,34 @@
             </div>
             <div v-else>
                 <v-row class="align-center">
-                    <v-col class="text-center text-grey"><span class="blink text-h5"><span
-                                class="material-icons mr-2">warning</span>{{ ui.txt_req_cus }}</span></v-col>
+                    <v-col class="text-center text-grey">
+                        <v-container>
+                            <v-row v-for="item in customerListEdit">
+                                <v-col>
+                                    <v-btn @click="customerListEdit[customerListEdit.findIndex((obj => obj.id == item.id))].active = item.active == true ? false : true" :variant="item.active ? 'outlined' : 'tonal'" color="red"><span class="material-icons">delete</span></v-btn>
+                                </v-col>
+                                <v-col>
+                                    <v-text-field v-model="item.name" :disabled="!item.active" density="compact" :label="i18n.lbl_cus_nam" variant="solo"></v-text-field>
+                                </v-col>
+                                <v-col>
+                                    <v-text-field v-model="item.phone" :disabled="!item.active" density="compact" :label="i18n.lbl_cus_phn" variant="solo"></v-text-field>
+                                </v-col>
+                                <v-col>
+                                    <v-text-field v-model="item.address" :disabled="!item.active" density="compact" :label="i18n.lbl_cus_adr" variant="solo"></v-text-field>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col>
+                                    <v-btn @click="customerListEdit.push({id: Date.now(), name: '', phone: '', address: '', active: 1})" class="mx-1" variant="outlined" color="blue"><span class="material-icons">add</span></v-btn>
+                                </v-col>
+                                <v-col></v-col>
+                                <v-col></v-col>
+                                <v-col>
+                                    <v-btn @click="console.log(customerListEdit)" class="mx-1" variant="outlined" color="green"><span class="material-icons pr-1">save</span>{{ i18n.btn_txt_sav }}</v-btn>
+                                </v-col>
+                            </v-row>
+                        </v-container>                        
+                    </v-col>
                 </v-row>
             </div>          
         </div>
@@ -356,30 +372,32 @@
         const app = createApp({
             setup() {
                 const db = new dbr("tr-TR");
-                const server = Vue.ref({ calendar: { date: "!", time: "!" }, forecast: { icon: "-", event: "-" , heat: "-"}, currency: { usd: "?", eur: "?"}});
+                const server = Vue.ref({ calendar: { date: "!", time: "!" }, currency: { usd: "?", eur: "?"}});
                 const currentPath = Vue.ref(window.location.hash);
                 const isPending = Vue.ref(false);
                 const isScrolled = Vue.ref(false);
                 const vapp = Vue.ref(null);
                 const load = Vue.ref(null);
                 const sums = Vue.ref(null);
-                const ui = Vue.ref(db.LanguagePack());
-                const customerList = Vue.ref(db.Customers());
+                const i18n = Vue.ref(db.LanguagePack());
+                const customers = Vue.ref(db.Customers())
+                const customerList = Vue.ref([]);
+                const customerListEdit = Vue.ref([]);
                 const selected = Vue.ref(null);
                 const dialog = Vue.ref(false);
                 const dialogDelete = Vue.ref(false);
                 const headers = Vue.ref([
                     { title: '#', align: 'center', key: 'rank', width: '30px', sortable: false },
-                    { title: ui.value.tbl_hdr_dat, key: 'date', width: '90px', sortable: false },
-                    { title: ui.value.tbl_hdr_itm, key: 'item', sortable: false },
-                    { title: ui.value.tbl_hdr_ucs, key: 'unitcost', width: '80px', sortable: false },
-                    { title: ui.value.tbl_hdr_amn, key: 'amount', width: '50px', sortable: false },
-                    { title: ui.value.tbl_hdr_unt, key: 'unit', width: '50px', sortable: false },
-                    { title: ui.value.tbl_hdr_sel, key: 'sell', width: '120px', sortable: false },
-                    { title: ui.value.tbl_hdr_pay, key: 'pay', width: '120px', sortable: false },
-                    { title: ui.value.tbl_hdr_tse, key: 'cumsell', width: '140px', sortable: false },
-                    { title: ui.value.tbl_hdr_tpa, key: 'cumpay', width: '140px', sortable: false },
-                    { title: ui.value.tbl_hdr_act, key: 'actions', width: '100px', sortable: false },
+                    { title: i18n.value.tbl_hdr_dat, key: 'date', width: '90px', sortable: false },
+                    { title: i18n.value.tbl_hdr_itm, key: 'item', sortable: false },
+                    { title: i18n.value.tbl_hdr_ucs, key: 'unitcost', width: '80px', sortable: false },
+                    { title: i18n.value.tbl_hdr_amn, key: 'amount', width: '50px', sortable: false },
+                    { title: i18n.value.tbl_hdr_unt, key: 'unit', width: '50px', sortable: false },
+                    { title: i18n.value.tbl_hdr_sel, key: 'sell', width: '120px', sortable: false },
+                    { title: i18n.value.tbl_hdr_pay, key: 'pay', width: '120px', sortable: false },
+                    { title: i18n.value.tbl_hdr_tse, key: 'cumsell', width: '140px', sortable: false },
+                    { title: i18n.value.tbl_hdr_tpa, key: 'cumpay', width: '140px', sortable: false },
+                    { title: i18n.value.tbl_hdr_act, key: 'actions', width: '100px', sortable: false },
                 ]);
                 const dbTransactions = Vue.ref({details: []});
                 const transactions = Vue.ref({details: [], totalSell: 0, totalPay: 0, net: 0, ld: null });
@@ -435,16 +453,16 @@
                 });
 
                 const formTitle = Vue.computed(() => {
-                    return editedIndex.value === -1 ? ui.value.txt_new_itm : ui.value.txt_edt_itm
+                    return editedIndex.value === -1 ? i18n.value.txt_new_itm : i18n.value.txt_edt_itm
                 });
 
                 const getInfo = Vue.computed(() => {
                     let unc = formatCurr(parseFloat(editedItem.value.unitcost));
                     let amn = formatCurr(parseFloat(editedItem.value.amount)).slice(0, -1);
                     if (editedItem.value.amount == 0) {
-                        return `${ui.value.tbl_hdr_pay}: ${unc}`;
+                        return `${i18n.value.tbl_hdr_pay}: ${unc}`;
                     } else {
-                        return `${ui.value.tbl_hdr_sel}: ${formatCurr(parseFloat(editedItem.value.unitcost) * parseFloat(editedItem.value.amount))} (${amn} ${editedItem.value.unit} x ${unc})`;
+                        return `${i18n.value.tbl_hdr_sel}: ${formatCurr(parseFloat(editedItem.value.unitcost) * parseFloat(editedItem.value.amount))} (${amn} ${editedItem.value.unit} x ${unc})`;
                     }
                 });
 
@@ -452,9 +470,11 @@
                 Vue.onMounted(async () => {
                     window.addEventListener('scroll', onScroll);
                     await getServerData();
+                    Object.assign(customerList.value, customers.value.filter(v => v.active))
+                    Object.assign(customerListEdit.value, customers.value);                   
                     vapp.value.style.display = 'block';
                     load.value.style.display = 'none';
-                    timer_sd = setInterval(getServerData, 1 * 1000);
+                    timer_sd = setInterval(getServerData, 1 * 60 * 1000);
                 });
 
                 Vue.onUnmounted(() => {
@@ -529,7 +549,7 @@
                 }
 
                 const deleteItem = (item) => {
-                    ui.value.txt_del_inf = `${item.rank}. ${item.date} - ${item.item}`;
+                    i18n.value.txt_del_inf = `${item.rank}. ${item.date} - ${item.item}`;
                     editedIndex.value = transactions.value.details.indexOf(item);
                     editedItem.value = Object.assign({}, item);
                     dialogDelete.value = true;
@@ -540,7 +560,7 @@
                         return;
                     }
                     isPending.value = true;
-                    await db.Delete(selected.value.id, editedIndex.value);
+                    await db.Delete(selected.value.id, editedIndex.value), Vue.toRaw(editedItem.value);
                     await getTransactions();
                     closeDelete();                    
                 }
@@ -585,7 +605,7 @@
                     sums,
                     currentPath,
                     currentView,
-                    ui,
+                    i18n,
                     dialog,
                     dialogDelete,
                     headers,
@@ -596,7 +616,9 @@
                     defaultItem,
                     formTitle,
                     selected,
+                    customers,
                     customerList,
+                    customerListEdit,
                     server,
                     rankStart,
                     rankEnd,
