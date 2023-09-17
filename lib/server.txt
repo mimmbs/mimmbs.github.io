@@ -1,0 +1,55 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const url = "https://*...*.supabase.co";
+const key = "*...*";
+        
+const supabase = createClient(url, key);
+
+Deno.serve(async (Request) => {
+    let data = {};
+    const path = new URL(Request.url).pathname;
+    if(path == "/info") {
+        let usd, eur;
+        try {
+            const dovizcom = await fetch('https://www.doviz.com');
+            const doviz = await dovizcom.text();
+            const eurString = `Euro\",\"latest_value_str\":\"`;
+            const eurIndex = doviz.indexOf(eurString);
+            const usdString = `Dolar\\u0131\",\"latest_value_str\":\"`;
+            const usdIndex = doviz.indexOf(usdString);
+            usd = doviz.substring(usdIndex, doviz.length).replace(usdString, "").substring(0, 5);
+            eur = doviz.substring(eurIndex, doviz.length).replace(eurString, "").substring(0, 5);
+        } catch(err) {
+            usd = '?';
+            eur = '?';
+            console.log(err);
+        }
+        const d = new Date();
+        d.setHours(d.getHours() + 3);
+        const info = { calendar: { date: d.toLocaleDateString("tr-TR"), time: d.toLocaleTimeString("tr-TR").slice(0, 5) }, currency: { eur: eur, usd: usd } };
+        data = info;
+    }
+
+    if(path == "/customers") {
+        const list = await supabase.from('customers').select('list');
+        data = list.data[0].list;
+    }
+
+    if(path == "/savecustomers") {
+        const stream = await Request.body?.getReader().read();
+        const enc = new TextDecoder("utf-8");
+        const text = enc.decode(stream?.value); 
+        await supabase
+            .from('customers')
+            .update({ list: JSON.parse(text) })
+            .eq('id', 1)
+            .select();
+    }
+
+
+    return new Response(JSON.stringify(data), {
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+        },
+    });
+});
