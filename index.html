@@ -89,12 +89,12 @@
                     <a v-else href="#/hesaplar">{{ i18n.anc_lbl_abo }} &raquo;</a>
                 </v-col>
                 <v-col cols="12" md="3" order="1" order-md="4" class="text-right">
-                    <v-chip label color="blue" class="text-center mr-1"><span class="chip-info">€ {{ server.currency.eur }}</span></v-chip>
-                    <v-chip label color="green" class="text-center mr-1"><span class="chip-info">$
+                    <v-chip label color="blue" class="text-center mr-1 px-1"><span class="chip-info">€ {{ server.currency.eur }}</span></v-chip>
+                    <v-chip label color="green" class="text-center mr-1 px-1"><span class="chip-info">$
                             {{ server.currency.usd }}</span></v-chip>
                     <v-tooltip :text="`${server.calendar.date}`" location="top">
                         <template v-slot:activator="{ props }">
-                            <v-chip label color="grey" class="text-center" v-bind="props">
+                            <v-chip label color="grey" class="text-center px-1" v-bind="props">
                                 <span class="chip-info">
                                     {{ server.calendar.time }}
                                 </span>
@@ -314,27 +314,27 @@
                 <v-row class="align-center">
                     <v-col class="text-center text-grey">
                         <v-container fluid>
-                            <v-row v-for="item in customerListEdit" class="hover">
-                                <v-col cols="2">
+                            <v-row v-for="item in customerListEdit" class="hover strip">
+                                <v-col cols="2" md="1">
                                     <v-btn @click="customerListEdit[customerListEdit.findIndex((obj => obj.id == item.id))].active = item.active == true ? false : true" :variant="item.active ? 'outlined' : 'tonal'" color="red"><span class="material-icons">{{ item.active ? 'delete' : 'delete_outline' }}</span></v-btn>
                                 </v-col>
-                                <v-col cols="4">
+                                <v-col cols="10" md="5">
                                     <v-text-field v-model="item.name" :disabled="!item.active" density="compact" :label="i18n.lbl_cus_nam" variant="solo" hide-details></v-text-field>
                                 </v-col>
-                                <v-col cols="3">
+                                <v-col cols="6" md="3">
                                     <v-text-field v-model="item.phone" :disabled="!item.active" density="compact" :label="i18n.lbl_cus_phn" variant="solo" hide-details></v-text-field>
                                 </v-col>
-                                <v-col cols="3">
+                                <v-col cols="6" md="3">
                                     <v-text-field v-model="item.address" :disabled="!item.active" density="compact" :label="i18n.lbl_cus_adr" variant="solo" hide-details></v-text-field>
                                 </v-col>
                             </v-row>
                             <v-row>
-                                <v-col cols="2">
+                                <v-col cols="1">
                                     <v-btn @click="customerListEdit.push({id: Date.now(), name: '', phone: '', address: '', active: 1})" class="mx-1" variant="outlined" color="blue"><span class="material-icons">add</span></v-btn>
                                 </v-col>
-                                <v-col cols="4"></v-col>
-                                <v-col cols="6" class="text-right">
-                                    <v-btn @click="refresh" variant="outlined" color="blue">{{ i18n.btn_txt_cnc }}</v-btn>
+                                <v-col cols="1"></v-col>
+                                <v-col cols="10" class="text-right">
+                                    <v-btn @click="refresh" variant="tonal" color="orange">{{ i18n.btn_txt_cnc }}</v-btn>
                                     <v-btn @click="saveCustomers" class="mx-1" variant="outlined" color="green"><span class="material-icons pr-1">save</span>{{ i18n.btn_txt_sav }}</v-btn>
                                 </v-col>
                             </v-row>
@@ -495,7 +495,7 @@
                 });
 
                 const getServerData = async () => {
-                    server.value = await dbr.Server();
+                    server.value = await db.Server();
                 }
 
                 const generateLists = async () => {
@@ -662,6 +662,14 @@
         }
 
         .hover:hover {
+            background-color: #c6c6c6 !important;
+        }
+
+        .strip {
+            border-bottom: 1px solid silver;
+        }
+
+        .strip:nth-child(odd) {
             background-color: #eee;
         }
 
