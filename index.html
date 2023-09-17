@@ -315,7 +315,7 @@
                     <v-col class="text-center text-grey">
                         <v-container fluid>
                             <v-row v-for="item in customerListEdit" class="hover strip">
-                                <v-col cols="32" md="1">
+                                <v-col cols="3" md="1">
                                     <v-btn @click="customerListEdit[customerListEdit.findIndex((obj => obj.id == item.id))].active = item.active == true ? false : true" :variant="item.active ? 'outlined' : 'tonal'" color="red"><span class="material-icons">{{ item.active ? 'delete' : 'delete_outline' }}</span></v-btn>
                                 </v-col>
                                 <v-col cols="9" md="5">
