@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/lib/vuetify.min.css" />
-
+    <!-- icons8.com -->
+    <link rel="icon" type="image/x-icon" href="/lib/favicon.png">
     <title>Marmara Ins. Mlz.</title>
     <style>
         /* latin-ext */
@@ -304,7 +305,7 @@
                         </div>
                         <v-container v-else class="fill-height">
                             <v-row class="align-center">
-                                <v-col class="text-center text-grey"><span class="blink text-h5"><span class="material-icons mr-2">warning</span>{{ i18n.txt_req_cus }}</span></v-col>
+                                <v-col class="text-center text-grey"><span class="blink text-h5"><span class="material-icons mr-2" style="font-size: 1.6rem !important;">warning</span>{{ i18n.txt_req_cus }}</span></v-col>
                             </v-row>
                         </v-container>
                     </v-col>
@@ -313,35 +314,38 @@
             <div v-else>
                 <v-row class="align-center">
                     <v-col class="text-center text-grey">
-                        <v-container fluid>
-                            <v-row v-for="item in customerListEdit" class="hover strip">
-                                <v-col cols="3" md="1">
-                                    <v-btn @click="customerListEdit[customerListEdit.findIndex((obj => obj.id == item.id))].active = item.active == true ? false : true" :variant="item.active ? 'outlined' : 'tonal'" color="red"><span class="material-icons">{{ item.active ? 'delete' : 'delete_outline' }}</span></v-btn>
+                        <v-container fluid class="ma-0 pa-0">
+                            <v-row v-for="item in customerListEdit" class="ma-0 pa-0 pt-2 hover strip">
+                                <v-col cols="3" md="1" class="ma-0 pa-0 px-2 pb-2">
+                                    <v-btn :disabled="isPending" block @click="customerListEdit[customerListEdit.findIndex((obj => obj.id == item.id))].active = item.active == true ? false : true" :variant="item.active ? 'outlined' : 'tonal'" color="red"><span class="material-icons">{{ item.active ? 'delete' : 'delete_outline' }}</span></v-btn>
                                 </v-col>
-                                <v-col cols="9" md="5">
-                                    <v-text-field v-model="item.name" :disabled="!item.active" density="compact" :label="i18n.lbl_cus_nam" variant="solo" hide-details></v-text-field>
+                                <v-col cols="9" md="5" class="ma-0 pa-0 px-2 pb-2">
+                                    <v-text-field v-model="item.name" :disabled="!item.active || isPending" density="compact" :label="i18n.lbl_cus_nam" variant="solo" hide-details></v-text-field>
                                 </v-col>
-                                <v-col cols="6" md="3">
-                                    <v-text-field v-model="item.phone" :disabled="!item.active" density="compact" :label="i18n.lbl_cus_phn" variant="solo" hide-details></v-text-field>
+                                <v-col cols="6" md="3" class="ma-0 pa-0 px-2 pb-2">
+                                    <v-text-field v-model="item.phone" :disabled="!item.active || isPending" density="compact" :label="i18n.lbl_cus_phn" variant="solo" hide-details></v-text-field>
                                 </v-col>
-                                <v-col cols="6" md="3">
-                                    <v-text-field v-model="item.address" :disabled="!item.active" density="compact" :label="i18n.lbl_cus_adr" variant="solo" hide-details></v-text-field>
+                                <v-col cols="6" md="3" class="ma-0 pa-0 px-2 pb-2">
+                                    <v-text-field v-model="item.address" :disabled="!item.active || isPending" density="compact" :label="i18n.lbl_cus_adr" variant="solo" hide-details></v-text-field>
                                 </v-col>
                             </v-row>
-                            <v-row>
-                                <v-col cols="1">
-                                    <v-btn @click="customerListEdit.push({id: Date.now(), name: '', phone: '', address: '', active: 1})" class="mx-1" variant="outlined" color="blue"><span class="material-icons">add</span></v-btn>
+                            <v-row class="ma-0 pa-0 pt-2">
+                                <v-col cols="3" md="1" class="ma-0 pa-0 px-2 pb-2">
+                                    <v-btn :disabled="isPending" block @click="customerListEdit.push({id: Date.now(), name: '', phone: '', address: '', active: 1})" variant="outlined" color="blue"><span class="material-icons">add</span></v-btn>
                                 </v-col>
-                                <v-col cols="1"></v-col>
-                                <v-col cols="10" class="text-right">
-                                    <v-btn @click="refresh" variant="tonal" color="orange">{{ i18n.btn_txt_cnc }}</v-btn>
-                                    <v-btn @click="saveCustomers" class="mx-1" variant="outlined" color="green"><span class="material-icons pr-1">save</span>{{ i18n.btn_txt_sav }}</v-btn>
+                                <v-col cols="1" md="1" class="ma-0 pa-0 px-2 pb-2"></v-col>
+                                <v-col cols="8" md="10" class="ma-0 pa-0 px-2 pb-2 text-right">
+                                    <v-btn :disabled="!isChanged || isPending" :loading="isPending" @click="refresh" variant="tonal" color="orange">{{ i18n.btn_txt_cnc }}</v-btn>
+                                    <v-btn :disabled="!isChanged || isPending" :loading="isPending" @click="saveCustomers" class="ml-2" variant="outlined" color="green"><span class="material-icons pr-1">save</span>{{ i18n.btn_txt_sav }}</v-btn>
                                 </v-col>
                             </v-row>
                         </v-container>
+                        <v-divider></v-divider>
                     </v-col>
                 </v-row>
             </div>
+            <v-snackbar v-model="snackbar" absolute :timeout="3000" :color="isSuccess ? 'green' : 'red'" location="top" transition="fade-transition">
+                {{ isSuccess ? i18n.txt_req_suc : i18n.txt_req_err }}</v-snackbar>
         </div>
     </div>
     <script src="/lib/vue.global.js"></script>
@@ -361,6 +365,9 @@
                 const currentPath = Vue.ref(window.location.hash);
                 const isPending = Vue.ref(false);
                 const isScrolled = Vue.ref(false);
+                const isChanged = Vue.ref(false);
+                const snackbar = Vue.ref(false);
+                const isSuccess = Vue.ref(false);
                 const vapp = Vue.ref(null);
                 const load = Vue.ref(null);
                 const sums = Vue.ref(null);
@@ -494,14 +501,21 @@
                     selected.value = null;
                 });
 
+                Vue.watch(customerListEdit, (newValue, oldValue) => {
+                    if (JSON.stringify(customers.value) != JSON.stringify(newValue)) {
+                        isChanged.value = true;
+                    }
+                },
+                    { deep: true });
+
                 const getServerData = async () => {
                     server.value = await db.Server();
                 }
 
                 const generateLists = async () => {
                     customers.value = await db.Customers();
-                    Object.assign(customerList.value, customers.value.filter(v => v.active));
-                    Object.assign(customerListEdit.value, customers.value);
+                    customerList.value = JSON.parse(JSON.stringify(customers.value.filter(v => v.active)));
+                    customerListEdit.value = JSON.parse(JSON.stringify(customers.value));
                 }
 
                 const getTransactions = async () => {
@@ -591,8 +605,18 @@
                 }
 
                 const saveCustomers = async () => {
-                    await db.SaveCustomers(Vue.toRaw(customerListEdit.value));
-                    refresh();
+                    let success = true;
+                    try {
+                        isPending.value = true;
+                        let t = await db.SaveCustomers(Vue.toRaw(customerListEdit.value));
+                        console.log(t);
+                        isPending.value = false;
+                    } catch {
+                        success = false;
+                    } finally {
+                        snackbar.value = true;
+                        isSuccess.value = success;
+                    }
                 }
 
                 return {
@@ -621,6 +645,9 @@
                     rankEnd,
                     isScrolled,
                     getInfo,
+                    isChanged,
+                    snackbar,
+                    isSuccess,
                     btn_clc_prt,
                     toggleFullScreen,
                     generateLists,
@@ -662,7 +689,7 @@
         }
 
         .hover:hover {
-            background-color: #c6c6c6 !important;
+            background-color: #E3F2FD !important;
         }
 
         .strip {
