@@ -113,8 +113,7 @@
                                 <template v-slot:top>
                                     <v-toolbar flat>
                                         <v-toolbar-title>{{ selected.name }}<br /><span class="text-body-2">{{
-                                                selected.phone }} {{ selected.address }}<br />
-                                                {{ i18n.txt_rep_tit }}</v-toolbar-title>
+                                                selected.phone }} {{ selected.address }}</v-toolbar-title>
                                         <v-dialog v-model="dialogDelete" max-width="600px">
                                             <v-card>
                                                 <v-card-title class="text-h5">
@@ -278,10 +277,10 @@
                                                                     <v-text-field :disabled="isPending || editedItem.amount <= 0" v-model="editedItem.unit" :label="i18n.tbl_hdr_unt"></v-text-field>
                                                                 </v-col>
                                                                 <v-col cols="12" sm="6" md="4">
-                                                                    <v-text-field :disabled="isPending" v-model="editedItem.unitcost" :label="i18n.tbl_hdr_ucs" :hint="i18n.txt_tip_sep"></v-text-field>
+                                                                    <v-text-field :disabled="isPending" v-model="editedItem.unitcost" :label="i18n.tbl_hdr_ucs" :rules="[ (v) => !!v || i18n.txt_tip_req, (v) => parseFloat(v) > 0 || '0.00' ]" :hint="i18n.txt_tip_sep"></v-text-field>
                                                                 </v-col>
                                                                 <v-col cols="12" sm="6" md="4">
-                                                                    {{ getInfo }}
+                                                                    <span v-show="parseFloat(editedItem.unitcost) > 0">{{ getInfo }}</span>
                                                                 </v-col>
                                                             </v-row>
                                                         </v-container>
@@ -292,7 +291,7 @@
                                                         <v-btn :disabled="isPending" variant="outlined" color="blue" @click="close">
                                                             {{ i18n.btn_txt_cnc }}
                                                         </v-btn>
-                                                        <v-btn :loading="isPending" :disabled="isPending || editedItem.item == null || editedItem.item == ''" variant="outlined" color="green" variant="text" @click="save">
+                                                        <v-btn :loading="isPending" :disabled="isPending || editedItem.item == null || editedItem.item == '' || editedItem.unitcost == null || editedItem.unitcost == '' || parseFloat(editedItem.unitcost) == 0" variant="outlined" color="green" variant="text" @click="save">
                                                             {{ i18n.btn_txt_sav }}
                                                         </v-btn>
                                                     </v-card-actions>
@@ -305,7 +304,7 @@
                         </div>
                         <v-container v-else class="fill-height">
                             <v-row class="align-center">
-                                <v-col class="text-center text-grey"><span class="blink text-h5"><span class="material-icons mr-2" style="font-size: 1.6rem !important;">warning</span>{{ i18n.txt_req_cus }}</span></v-col>
+                                <v-col class="text-center text-grey"><span class="blink text-h5">{{ i18n.txt_req_cus }}</span></v-col>
                             </v-row>
                         </v-container>
                     </v-col>
@@ -344,8 +343,13 @@
                     </v-col>
                 </v-row>
             </div>
-            <v-snackbar v-model="snackbar" absolute :timeout="3000" :color="isSuccess ? 'green' : 'red'" location="top" transition="fade-transition">
-                {{ isSuccess ? i18n.txt_req_suc : i18n.txt_req_err }}</v-snackbar>
+            <v-snackbar v-model="snackbar" :timeout="4000" :color="isSuccess ? 'green' : 'red'" location="top" transition="fade-transition">
+                {{ isSuccess ? i18n.txt_req_suc : i18n.txt_req_err }}
+                <template v-slot:actions>
+                    <v-btn color="white" variant="text" @click="snackbar = false">
+                        <span class="material-icons">close</span>
+                    </v-btn>
+                </template></v-snackbar>
         </div>
     </div>
     <script src="/lib/vue.global.js"></script>
@@ -453,7 +457,7 @@
                     if (editedItem.value.amount == 0) {
                         return `${i18n.value.tbl_hdr_pay}: ${unc}`;
                     } else {
-                        return `${i18n.value.tbl_hdr_sel}: ${formatCurr(parseFloat(editedItem.value.unitcost) * parseFloat(editedItem.value.amount))} (${amn} ${editedItem.value.unit} x ${unc})`;
+                        return `${i18n.value.tbl_hdr_sel}: ${formatCurr(parseFloat(editedItem.value.unitcost) * parseFloat(editedItem.value.amount))} (${amn} x ${unc})`;
                     }
                 });
 
@@ -497,7 +501,7 @@
                     filterTransactions();
                 });
 
-                Vue.watch(currentView, (val) => {
+                Vue.watch(currentView, async (val) => {
                     selected.value = null;
                 });
 
@@ -609,7 +613,7 @@
                     try {
                         isPending.value = true;
                         let t = await db.SaveCustomers(Vue.toRaw(customerListEdit.value));
-                        console.log(t);
+                        await generateLists();
                         isPending.value = false;
                     } catch {
                         success = false;
@@ -689,7 +693,7 @@
         }
 
         .hover:hover {
-            background-color: #E3F2FD !important;
+            background-color: #c5cae9 !important;
         }
 
         .strip {
