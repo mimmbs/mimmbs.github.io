@@ -80,10 +80,10 @@
                     <v-combobox v-if="currentView.toLowerCase() != 'hesaplar'" v-model="selected" :disabled="isPending" :loading="isPending" density="compact" variant="solo-filled" :bg-color="!selected ? 'orange' : 'blue-grey'" :label="i18n.txt_cmb_tit" :items="customerList" item-title="name" item-value="id" return-object hide-details></v-combobox>
                 </v-col>
                 <v-col cols="8" md="3" order="2" order-md="2">
-                    <v-btn class="mr-1" @click="toggleFullScreen">
+                    <v-btn class="mr-1" height="44" @click="toggleFullScreen">
                         <span class="material-icons">fullscreen</span>
                     </v-btn>
-                    <v-btn v-if="selected" :disabled="isPending" @click="btn_clc_prt"><span class="material-icons pr-1">print</span>{{ i18n.btn_txt_prt }}</v-btn>
+                    <v-btn v-if="selected" :disabled="isPending" height="44" @click="btn_clc_prt"><span class="material-icons pr-1">print</span>{{ i18n.btn_txt_prt }}</v-btn>
                 </v-col>
                 <v-col cols="4" md="3" order="3" order-md="3">
                     <a v-if="currentView.toLowerCase() == 'hesaplar'" href="#/">&laquo; {{ i18n.anc_lbl_hom }}</a>
@@ -182,7 +182,7 @@
                                     </div>
                                 </template>
                                 <template v-slot:item.sell="{ item }">
-                                    <div class="text-right">
+                                    <div class="text-right col-strip">
                                         {{ item.raw.amount > 0 ? formatCurr(item.raw.unitcost * item.raw.amount) : "" }}
                                     </div>
                                 </template>
@@ -192,7 +192,7 @@
                                     </div>
                                 </template>
                                 <template v-slot:item.cumsell="{ item }">
-                                    <div class="text-right">
+                                    <div class="text-right col-strip">
                                         {{ item.raw.cumsell == "" ? "" : formatCurr(item.raw.cumsell) }}
                                     </div>
                                 </template>
@@ -221,15 +221,15 @@
                                     <v-divider class="mb-3"></v-divider>
                                     <v-row class="align-center no-print">
                                         <v-col cols="6" md="2" order="2" order-md="1">
-                                            <v-text-field v-model="rankStart" type="number" density="compact" class="ml-1" :label="`${i18n.lbl_chk_str} (1)`" variant="solo-filled" :bg-color="rankStart != 1 ? 'blue-lighten-1' : 'white'" min="1" :max="dbTransactions.details.length" hide-details>
+                                            <v-text-field v-show="transactions.details.length > 0" v-model=" rankStart" type="number" density="compact" class="ml-1" :label="`${i18n.lbl_chk_str} (1)`" variant="solo-filled" :bg-color="rankStart != 1 ? 'blue-lighten-1' : 'white'" min="1" :max="dbTransactions.details.length" hide-details>
                                             </v-text-field>
                                         </v-col>
                                         <v-col cols="6" md="2" order="3" order-md="2">
-                                            <v-text-field v-model="rankEnd" type="number" density="compact" class="mr-1" :label="`${i18n.lbl_chk_end} (${dbTransactions.details.length})`" variant="solo-filled" :bg-color="rankEnd != dbTransactions.details.length ? 'blue-lighten-1' : 'white'" min="1" :max="dbTransactions.details.length" hide-details>
+                                            <v-text-field v-show="transactions.details.length > 0" v-model=" rankEnd" type="number" density="compact" class="mr-1" :label="`${i18n.lbl_chk_end} (${dbTransactions.details.length})`" variant="solo-filled" :bg-color="rankEnd != dbTransactions.details.length ? 'blue-lighten-1' : 'white'" min="1" :max="dbTransactions.details.length" hide-details>
                                             </v-text-field>
                                         </v-col>
                                         <v-col cols="12" md="2" order="4" order-md="3">
-                                            <table ref="sums">
+                                            <table v-show="transactions.details.length > 0" ref="sums">
                                                 <tr>
                                                     <td width="50" class="text-right">{{ i18n.tbl_hdr_sel }}</td>
                                                     <td width="80" class="text-right">{{ formatCurr(transactions.totalSell) }}</td>
@@ -388,11 +388,11 @@
                     { title: i18n.value.tbl_hdr_itm, key: 'item', sortable: false },
                     { title: i18n.value.tbl_hdr_ucs, key: 'unitcost', width: '80px', sortable: false },
                     { title: i18n.value.tbl_hdr_amn, key: 'amount', width: '50px', sortable: false },
-                    { title: i18n.value.tbl_hdr_unt, key: 'unit', width: '50px', sortable: false },
-                    { title: i18n.value.tbl_hdr_sel, key: 'sell', width: '120px', sortable: false },
-                    { title: i18n.value.tbl_hdr_pay, key: 'pay', width: '120px', sortable: false },
-                    { title: i18n.value.tbl_hdr_tse, key: 'cumsell', width: '140px', sortable: false },
-                    { title: i18n.value.tbl_hdr_tpa, key: 'cumpay', width: '140px', sortable: false },
+                    { title: i18n.value.tbl_hdr_unt, key: 'unit', width: '55px', sortable: false },
+                    { title: i18n.value.tbl_hdr_sel, key: 'sell', width: '115px', sortable: false },
+                    { title: i18n.value.tbl_hdr_pay, key: 'pay', width: '115px', sortable: false },
+                    { title: i18n.value.tbl_hdr_tse, key: 'cumsell', width: '135px', sortable: false },
+                    { title: i18n.value.tbl_hdr_tpa, key: 'cumpay', width: '135px', sortable: false },
                     { title: i18n.value.tbl_hdr_act, key: 'actions', width: '100px', sortable: false },
                 ]);
                 const dbTransactions = Vue.ref({ details: [] });
@@ -509,8 +509,7 @@
                     if (JSON.stringify(customers.value) != JSON.stringify(newValue)) {
                         isChanged.value = true;
                     }
-                },
-                    { deep: true });
+                }, { deep: true });
 
                 const getServerData = async () => {
                     server.value = await db.Server();
@@ -566,9 +565,28 @@
                         return;
                     }
                     isPending.value = true;
-                    await db.Delete(selected.value.id, editedIndex.value), Vue.toRaw(editedItem.value);
+                    transactions.value.details.splice(editedIndex.value, 1);
+                    await db.SaveTransactions(selected.value.id, Vue.toRaw(transactions.value.details), null, 'D');
                     await getTransactions();
                     closeDelete();
+                }
+
+                const save = async () => {
+                    if (isPending.value) {
+                        return;
+                    }
+                    isPending.value = true;
+                    editedItem.value.item = editedItem.value.item.trim();
+                    editedItem.value.amount = parseFloat(editedItem.value.amount);
+                    editedItem.value.unitcost = parseFloat(editedItem.value.unitcost);
+                    if (editedIndex.value > -1) {
+                        Object.assign(transactions.value.details[editedIndex.value], editedItem.value);
+                    } else {
+                        transactions.value.details.push(editedItem.value);
+                    }
+                    await db.SaveTransactions(selected.value.id, Vue.toRaw(transactions.value.details), null, editedIndex.value > -1 ? 'U' : 'C');
+                    await getTransactions();
+                    close();
                 }
 
                 const close = () => {
@@ -587,16 +605,6 @@
                     });
                 }
 
-                const save = async () => {
-                    if (isPending.value) {
-                        return;
-                    }
-                    isPending.value = true;
-                    await db.UpdateOrInsert(selected.value.id, editedIndex.value, Vue.toRaw(editedItem.value));
-                    await getTransactions();
-                    close();
-                }
-
                 const onScroll = () => {
                     isScrolled.value = false;
                     if (window.scrollY > 20) {
@@ -612,7 +620,7 @@
                     let success = true;
                     try {
                         isPending.value = true;
-                        let t = await db.SaveCustomers(Vue.toRaw(customerListEdit.value));
+                        let t = await db.SaveCustomers(Vue.toRaw(customerListEdit.value), null);
                         await generateLists();
                         isPending.value = false;
                     } catch {
@@ -702,6 +710,14 @@
 
         .strip:nth-child(odd) {
             background-color: #eee;
+        }
+
+        td:has(> div.col-strip) {
+            border-left: 1px solid rgb(200, 200, 200);
+        }
+
+        .v-data-table__tr:nth-child(odd) {
+            background-color: #efefef80 !important;
         }
 
         @keyframes blinker {
