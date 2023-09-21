@@ -8,7 +8,7 @@ const supabase = createClient(url, key);
 Deno.serve(async (Request) => {
     let data = {};
     const path = new URL(Request.url).pathname;
-    if(path == "/info") {
+    if (path == "/info") {
         let usd, eur;
         try {
             const dovizcom = await fetch('https://www.doviz.com');
@@ -30,12 +30,28 @@ Deno.serve(async (Request) => {
         data = info;
     }
 
-    if(path == "/customers") {
+    if (path == "/tr-TR") {
+        const pack = await supabase.from('languages').select('package').eq('culture', 'tr-TR');
+        data = pack.data[0].package;
+    }
+
+    if (path == "/customers") {
         const list = await supabase.from('customers').select('list');
         data = list.data[0].list;
     }
 
-    if(path == "/transactions") {
+    if (path == "/login") {
+        const stream = await Request.body?.getReader().read();
+        const text = new TextDecoder("utf-8").decode(stream?.value); 
+        const json = JSON.parse(text);
+        if (json.username == "unsal" && json.password == "758") {
+            data = { login: true };
+        } else {
+            data = { login: false };
+        }
+    }
+
+    if (path == "/transactions") {
         const stream = await Request.body?.getReader().read();
         const text = new TextDecoder("utf-8").decode(stream?.value); 
         try {
@@ -49,7 +65,7 @@ Deno.serve(async (Request) => {
         }
     }
 
-    if(path == "/savetransactions") {
+    if (path == "/savetransactions") {
         const stream = await Request.body?.getReader().read();
         const text = new TextDecoder("utf-8").decode(stream?.value); 
         const json = JSON.parse(text);
@@ -71,7 +87,7 @@ Deno.serve(async (Request) => {
         }
     }
 
-    if(path == "/savecustomers") {
+    if (path == "/savecustomers") {
         const stream = await Request.body?.getReader().read();
         const text = new TextDecoder("utf-8").decode(stream?.value); 
         await supabase
@@ -81,7 +97,7 @@ Deno.serve(async (Request) => {
                 .select();
     }
 
-    if(path == "/savelog") {
+    if (path == "/savelog") {
         const stream = await Request.body?.getReader().read();
         const text = new TextDecoder("utf-8").decode(stream?.value); 
         await supabase
@@ -92,7 +108,7 @@ Deno.serve(async (Request) => {
 
     return new Response(JSON.stringify(data), {
         headers: {
-            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Origin": "https://mimmbs.github.io",
         },
     });
 });
