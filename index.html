@@ -395,7 +395,7 @@
                 const vapp = Vue.ref(null);
                 const load = Vue.ref(null);
                 const sums = Vue.ref(null);
-                const i18ns = Vue.ref(db.HeadersPack);
+                const i18ns = Vue.ref(db.HeadersPack());
                 const i18n = Vue.ref({});
                 const customers = Vue.ref([])
                 const customerList = Vue.ref([]);
@@ -497,7 +497,6 @@
                     vapp.value.style.display = 'block';
                     load.value.style.display = 'none';
                     timer_sd = setInterval(getServerData, 1 * 60 * 1000);
-                    console.log(i18ns);
                 });
 
                 Vue.onUnmounted(() => {
@@ -774,7 +773,7 @@
         }
 
         .strip:nth-child(odd) {
-            background-color: #eeeeee50;
+            background-color: #eeeeee80;
         }
 
         td:has(> div.col-strip) {
