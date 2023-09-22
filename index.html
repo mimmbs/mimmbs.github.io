@@ -83,8 +83,8 @@
                             <v-img src="/lib/favicon.png" height="32"></v-img>
                             Marmara İnşaat Malzemeleri
                             <v-divider class="my-2"></v-divider>
-                            <v-text-field v-model="user.username" :disabled="isPending" :label="i18n.txt_lgn_usr"></v-text-field>
-                            <v-text-field v-model="user.password" :disabled="isPending" type="password" :label="i18n.txt_lgn_pwd"></v-text-field>
+                            <v-text-field v-model="user.username" :disabled="isPending" :label="i18n.txt_lgn_usr" :error="snackbar"></v-text-field>
+                            <v-text-field v-model="user.password" :disabled="isPending" type="password" :label="i18n.txt_lgn_pwd" :error="snackbar"></v-text-field>
                             <v-btn :disabled="isPending" :loading="isPending" block color="blue-grey-lighten-2" @click="login">{{ i18n.btn_lgn_sbt }}</v-btn>
                             <v-switch v-model="remember" :disabled="isPending" :label="i18n.txt_lgn_rme" value="yes"></v-switch>
                         </v-col>
@@ -600,7 +600,7 @@
                     }
                     isPending.value = true;
                     transactions.value.details.splice(editedIndex.value, 1);
-                    await db.SaveTransactions(selected.value.id, Vue.toRaw(transactions.value.details), null, 'D');
+                    await db.SaveTransactions(selected.value.id, Vue.toRaw(transactions.value.details), 'D');
                     await getTransactions();
                     closeDelete();
                 }
@@ -618,7 +618,16 @@
                     } else {
                         transactions.value.details.push(editedItem.value);
                     }
-                    await db.SaveTransactions(selected.value.id, Vue.toRaw(transactions.value.details), null, editedIndex.value > -1 ? 'U' : 'C');
+                    let success = true;
+                    try {
+                        await db.SaveTransactions(selected.value.id, Vue.toRaw(transactions.value.details), editedIndex.value > -1 ? 'U' : 'C');
+
+                    } catch {
+                        success = false;
+                    } finally {
+                        snackbar.value = true;
+                        isSuccess.value = success;
+                    }
                     await getTransactions();
                     close();
                 }
@@ -654,7 +663,7 @@
                     let success = true;
                     try {
                         isPending.value = true;
-                        let t = await db.SaveCustomers(Vue.toRaw(customerListEdit.value), null);
+                        let t = await db.SaveCustomers(Vue.toRaw(customerListEdit.value));
                         await generateLists();
                         isPending.value = false;
                     } catch {
