@@ -246,7 +246,7 @@
                                             <v-col cols="12" md="2" order="4" order-md="3">
                                                 <table v-show="transactions.details.length > 0" ref="sums">
                                                     <tr>
-                                                        <td width="50" class="text-right">{{ i18n.tbl_hdr_sel }}</td>
+                                                        <td width="50" class="text-right">{{ i18ns.tbl_hdr_sel }}</td>
                                                         <td width="80" class="text-right">{{ formatCurr(transactions.totalSell) }}</td>
                                                         <td rowspan="2">
                                                             <span class="pl-3 text-h5" :class="transactions.ld < 0 ? 'text-green' : 'text-red'">
@@ -255,7 +255,7 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-right">{{ i18n.tbl_hdr_pay }}</td>
+                                                        <td class="text-right">{{ i18ns.tbl_hdr_pay }}</td>
                                                         <td class="text-right">{{ formatCurr(transactions.totalPay) }}</td>
                                                     </tr>
                                                 </table>
@@ -280,19 +280,19 @@
                                                             <v-container>
                                                                 <v-row class="align-center">
                                                                     <v-col cols="12" sm="6" md="4">
-                                                                        <v-text-field :disabled="isPending" v-model="editedItem.date" type="date" :label="i18n.tbl_hdr_dat"></v-text-field>
+                                                                        <v-text-field :disabled="isPending" v-model="editedItem.date" type="date" :label="i18ns.tbl_hdr_dat"></v-text-field>
                                                                     </v-col>
                                                                     <v-col cols="12" sm="6" md="4">
-                                                                        <v-text-field :disabled="isPending" v-model="editedItem.item" :label="i18n.tbl_hdr_itm" :rules="[ v => !!v || i18n.txt_tip_req ]"></v-text-field>
+                                                                        <v-text-field :disabled="isPending" v-model="editedItem.item" :label="i18ns.tbl_hdr_itm" :rules="[ v => !!v || i18n.txt_tip_req ]"></v-text-field>
                                                                     </v-col>
                                                                     <v-col cols="12" sm="6" md="4">
-                                                                        <v-text-field :disabled="isPending" v-model="editedItem.amount" :label="i18n.tbl_hdr_amn" :hint="i18n.txt_tip_amn"></v-text-field>
+                                                                        <v-text-field :disabled="isPending" v-model="editedItem.amount" :label="i18ns.tbl_hdr_amn" :hint="i18n.txt_tip_amn"></v-text-field>
                                                                     </v-col>
                                                                     <v-col cols="12" sm="6" md="4">
-                                                                        <v-text-field :disabled="isPending || editedItem.amount <= 0" v-model="editedItem.unit" :label="i18n.tbl_hdr_unt"></v-text-field>
+                                                                        <v-text-field :disabled="isPending || editedItem.amount <= 0" v-model="editedItem.unit" :label="i18ns.tbl_hdr_unt"></v-text-field>
                                                                     </v-col>
                                                                     <v-col cols="12" sm="6" md="4">
-                                                                        <v-text-field :disabled="isPending" v-model="editedItem.unitcost" :label="i18n.tbl_hdr_ucs" :rules="[ (v) => !!v || i18n.txt_tip_req, (v) => parseFloat(v) > 0 || '0.00' ]" :hint="i18n.txt_tip_sep"></v-text-field>
+                                                                        <v-text-field :disabled="isPending" v-model="editedItem.unitcost" :label="i18ns.tbl_hdr_ucs" :rules="[ (v) => !!v || i18n.txt_tip_req, (v) => parseFloat(v) > 0 || '0.00' ]" :hint="i18n.txt_tip_sep"></v-text-field>
                                                                     </v-col>
                                                                     <v-col cols="12" sm="6" md="4">
                                                                         <span v-show="parseFloat(editedItem.unitcost) > 0">{{ getInfo }}</span>
@@ -395,6 +395,7 @@
                 const vapp = Vue.ref(null);
                 const load = Vue.ref(null);
                 const sums = Vue.ref(null);
+                const i18ns = Vue.ref(db.HeadersPack);
                 const i18n = Vue.ref({});
                 const customers = Vue.ref([])
                 const customerList = Vue.ref([]);
@@ -404,16 +405,16 @@
                 const dialogDelete = Vue.ref(false);
                 const headers = Vue.ref([
                     { title: '#', align: 'center', key: 'rank', width: '30px', sortable: false },
-                    { title: i18n.value.tbl_hdr_dat, key: 'date', width: '90px', sortable: false },
-                    { title: i18n.value.tbl_hdr_itm, key: 'item', sortable: false },
-                    { title: i18n.value.tbl_hdr_ucs, key: 'unitcost', width: '80px', sortable: false },
-                    { title: i18n.value.tbl_hdr_amn, key: 'amount', width: '50px', sortable: false },
-                    { title: i18n.value.tbl_hdr_unt, key: 'unit', width: '55px', sortable: false },
-                    { title: i18n.value.tbl_hdr_sel, key: 'sell', width: '115px', sortable: false },
-                    { title: i18n.value.tbl_hdr_pay, key: 'pay', width: '115px', sortable: false },
-                    { title: i18n.value.tbl_hdr_tse, key: 'cumsell', width: '135px', sortable: false },
-                    { title: i18n.value.tbl_hdr_tpa, key: 'cumpay', width: '135px', sortable: false },
-                    { title: i18n.value.tbl_hdr_act, key: 'actions', width: '100px', sortable: false },
+                    { title: i18ns.value.tbl_hdr_dat, key: 'date', width: '90px', sortable: false },
+                    { title: i18ns.value.tbl_hdr_itm, key: 'item', sortable: false },
+                    { title: i18ns.value.tbl_hdr_ucs, key: 'unitcost', width: '80px', sortable: false },
+                    { title: i18ns.value.tbl_hdr_amn, key: 'amount', width: '50px', sortable: false },
+                    { title: i18ns.value.tbl_hdr_unt, key: 'unit', width: '55px', sortable: false },
+                    { title: i18ns.value.tbl_hdr_sel, key: 'sell', width: '115px', sortable: false },
+                    { title: i18ns.value.tbl_hdr_pay, key: 'pay', width: '115px', sortable: false },
+                    { title: i18ns.value.tbl_hdr_tse, key: 'cumsell', width: '135px', sortable: false },
+                    { title: i18ns.value.tbl_hdr_tpa, key: 'cumpay', width: '135px', sortable: false },
+                    { title: i18ns.value.tbl_hdr_act, key: 'actions', width: '100px', sortable: false },
                 ]);
                 const dbTransactions = Vue.ref({ details: [] });
                 const transactions = Vue.ref({ details: [], totalSell: 0, totalPay: 0, net: 0, ld: null });
@@ -698,6 +699,7 @@
                     currentPath,
                     currentView,
                     i18n,
+                    i18ns,
                     dialog,
                     dialogDelete,
                     headers,
