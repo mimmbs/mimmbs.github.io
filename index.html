@@ -197,7 +197,7 @@
                                         </div>
                                     </template>
                                     <template v-slot:item.sell="{ item }">
-                                        <div class="text-right col-strip">
+                                        <div class="text-right col-strip-left">
                                             {{ item.raw.amount > 0 ? formatCurr(item.raw.unitcost * item.raw.amount) : "" }}
                                         </div>
                                     </template>
@@ -207,13 +207,13 @@
                                         </div>
                                     </template>
                                     <template v-slot:item.cumsell="{ item }">
-                                        <div class="text-right col-strip">
-                                            {{ item.raw.cumsell == "" ? "" : formatCurr(item.raw.cumsell) }}
+                                        <div class="text-right col-strip-left">
+                                            <b>{{ item.raw.cumsell == "" ? "" : formatCurr(item.raw.cumsell) }}</b>
                                         </div>
                                     </template>
                                     <template v-slot:item.cumpay="{ item }">
-                                        <div class="text-right">
-                                            {{ item.raw.cumpay == "" ? "" : formatCurr(item.raw.cumpay) }}
+                                        <div class="text-right col-strip-right">
+                                            <b>{{ item.raw.cumpay == "" ? "" : formatCurr(item.raw.cumpay) }}</b>
                                         </div>
                                     </template>
                                     <template v-slot:item.actions="{ item }">
@@ -776,8 +776,12 @@
             background-color: #eeeeee90;
         }
 
-        td:has(> div.col-strip) {
+        td:has(> div.col-strip-left) {
             border-left: 1px solid rgb(200, 200, 200);
+        }
+
+        td:has(> div.col-strip-right) {
+            border-right: 1px solid rgb(200, 200, 200);
         }
 
         .v-data-table__tr:nth-child(odd) {
